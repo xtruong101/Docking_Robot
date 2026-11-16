@@ -1,0 +1,104 @@
+# YÊU CẦU: Viết bộ mô phỏng Python cho đề tài "Autonomous Docking của robot di động vi sai"
+
+Bạn là kỹ sư robot/Python. Hãy viết một dự án hoàn chỉnh, chạy được bằng một lệnh, dùng CHỈ NumPy, Matplotlib (và SciPy/pandas nếu thật cần). Code sạch, có type hint, docstring ngắn, comment tiếng Việt cho các bước quan trọng. Không dùng ROS.
+
+## 1. Bài toán
+- Robot vi sai (unicycle) trong mặt phẳng 2D, không vật cản.
+- Trạm sạc ở gốc O=(0,0), trục dock hướng +x. Robot phải tới O với góc hướng θ=0 (đi vào dock theo +x).
+- Trạng thái thật: q=(x,y,θ). Điều khiển: (v, ω).
+- Động học: x' = v cosθ, y' = v sinθ, θ' = ω. Tích phân Euler (dt=0.02 s), có tham số để đổi sang RK4 kiểm tra sai khác.
+- Quan hệ bánh xe (chỉ dùng để quy đổi/báo cáo): v=r(ωR+ωL)/2, ω=r(ωR−ωL)/L, r=0.035 m, L=0.23 m.
+- Giới hạn: |v|≤0.3 m/s, |ω|≤1.5 rad/s. Xử lý bão hòa bằng cắt (clip) và có tùy chọn chia tỷ lệ (giữ nguyên tỷ lệ v/ω).
+- Tư thế xuất phát: x∈[-3,-0.5], y∈[-2,2], θ∈[-π,π] (bao gồm cả quay lưng về dock).
+
+## 2. Tiêu chí docking thành công (đánh giá bằng TRẠNG THÁI THẬT, không dùng trạng thái đo)
+Thành công khi đồng thời: sai số vị trí √(x²+y²) ≤ 2 cm; |θ| ≤ 3°; thời gian ≤ 60 s; không vượt dock (x > 0.05 m thì tính thất bại do overshoot). Ghi nhận lý do thất bại: timeout / overshoot / sai hướng.
+
+## 3. Bộ điều khiển 1: Tọa độ cực (Siegwart/Aicardi)
+- dx=-x, dy=-y; ρ=√(dx²+dy²); α=wrap(atan2(dy,dx)−θ); β=wrap(−θ−α).
+- Luật: v=kρ·ρ, ω=kα·α+kβ·β. Gain khởi điểm (kρ,kα,kβ)=(0.5,1.5,−0.5).
+- Nếu |α|>π/2 (robot quay lưng): v=0, ω=kα·α (quay tại chỗ), thoát chế độ này bằng hysteresis (vào khi |α|>π/2+0.1, ra khi |α|<π/2−0.1).
+- Khi ρ<ρ_freeze (mặc định 0.02 m): đóng băng α, β ở giá trị cuối hoặc chuyển sang chế độ chỉ căn hướng, để tránh rung do nhiễu. Có tham số bật/tắt để làm ablation.
+- Bão hòa v, ω.
+
+## 4. Bộ điều khiển 2: PID hai vòng
+- Vòng ngoài: v = PID_v(ρ) · max(0, cos(e_θ)).
+- Vòng trong: e_θ = wrap(θ_ref − θ), θ_ref = −arctan(k_y·y), ω = PID_ω(e_θ).
+- Lớp PID: có anti-windup (clamp tích phân), lọc thông thấp cho thành phần D (hệ số alpha), bão hòa đầu ra. PID có trạng thái nên tạo instance mới cho mỗi lần chạy.
+- Khi quay lưng (|e_θ|>π/2) dùng chế độ quay tại chỗ giống bộ cực để so sánh công bằng về cấu trúc.
+- Gain khởi điểm: PID_v(1.0,0,0.1), PID_ω(3.0,0,0.2), k_y=2.0.
+
+## 5. Kiểm chứng ổn định (xuất ra file, đưa vào báo cáo)
+a) Tuyến tính hóa hệ (ρ,α,β) quanh gốc với v=kρρ, ω=kαα+kββ, sinα≈α, cosα≈1, ta được:
+   ρ'=−kρ ρ; α'=−(kα−kρ)α − kβ β; β'=−kρ α.
+   Viết hàm tính ma trận A, trị riêng, và kiểm tra điều kiện: kρ>0, kβ<0, kα−kρ>0 (ổn định cục bộ) và kα+(5/3)kβ−(2/π)kρ>0 (không đổi chiều chuyển động).
+b) Vẽ bản đồ vùng ổn định trong mặt phẳng (kα,kβ) với kρ cố định, tô màu theo điều kiện thỏa/không thỏa; đánh dấu cặp gain đã chọn.
+c) Vẽ phần thực lớn nhất của trị riêng theo một gain khi quét.
+d) Kiểm tra số: mô phỏng không nhiễu từ ≥50 tư thế, chứng minh ρ→0 đơn điệu (hoặc báo cáo số ca không đơn điệu).
+
+## 6. Mô hình nhiễu và kịch bản
+Tham số hóa trong dataclass `Noise`: sig_pos (m), sig_yaw (rad) cho nhiễu đo; sig_v, sig_w cho nhiễu chấp hành (cộng vào lệnh); delay_steps (trễ điều khiển, dùng hàng đợi FIFO, 50–100 ms); bias_yaw (tùy chọn). Nhiễu đo Gaussian cộng vào tư thế đo được (bộ điều khiển chỉ thấy tư thế đo).
+
+| Kịch bản | Nội dung |
+|---|---|
+| S1 | Lý tưởng, không nhiễu, 3 tư thế đại diện: phía trước (-2,0,0), lệch bên (-1.5,1.5,0), quay lưng (-1.5,0.5,π) |
+| S2 | Nhiễu đo σpos=1 cm, σθ=1° |
+| S3 | Nhiễu chấp tuyến σv=0.01, σω=0.05 + trễ 75 ms |
+| S4 | Tư thế khó: rất lệch bên (|y|≥1.5 và x≥-1), hoặc gần dock (x∈[-0.5,-0.3]) với hướng lệch lớn |
+| S5 | Tổng hợp mức cao: σpos=2 cm, σθ=3°, σv=0.02, σω=0.1, trễ 100 ms |
+| Quét | Hệ số nhân nhiễu k∈{0,0.5,1,1.5,2,3,4} nhân lên bộ nhiễu S5; vẽ tỷ lệ thành công theo k |
+
+## 7. Tinh chỉnh công bằng (rất quan trọng)
+- Dùng cùng ngân sách cho hai bộ: random search (hoặc differential evolution) với đúng N=300 lần đánh giá mỗi bộ, cùng hàm mục tiêu J = −tỷ_lệ_thành_công + 0.01·thời_gian_trung_bình + 0.5·tỷ_lệ_overshoot, đánh giá trên tập TUNING (seed 1, 100 tư thế, kịch bản S2).
+- Đánh giá cuối trên tập TEST riêng (seed 2024), không dùng chung với tập tinh chỉnh.
+- Cả hai bộ dùng chính xác cùng danh sách tư thế xuất phát và cùng chuỗi nhiễu (dùng seed theo từng lần chạy, không dùng chung một RNG tuần tự, để thứ tự gọi không làm lệch).
+- In và lưu gain ban đầu và gain sau tinh chỉnh của cả hai.
+
+## 8. Chỉ số và thống kê
+Mỗi kịch bản × mỗi bộ điều khiển: n=300 lần chạy. Chỉ số: tỷ lệ thành công (kèm khoảng tin cậy Wilson 95%), sai số vị trí cuối, sai số hướng cuối, thời gian docking (chỉ trên các ca thành công; báo cáo mean±std và median), tỷ lệ overshoot, tỷ lệ timeout, độ dài quỹ đạo, năng lượng điều khiển ∫(v²+ω²)dt. Kiểm định ý nghĩa: McNemar cho tỷ lệ thành công ghép cặp, Wilcoxon cho thời gian ghép cặp (scipy.stats).
+
+## 9. Hình cần xuất (lưu PNG 300 dpi và PDF vector vào figures/, nhãn trục tiếng Việt có đơn vị, font DejaVu Sans hoặc Times nếu có)
+1. Sơ đồ hệ tọa độ dock và robot (vẽ bằng matplotlib, có mũi tên hướng, dock, vùng dung sai).
+2. Quỹ đạo S1 từ 3 tư thế, xếp chồng hai bộ điều khiển (có mũi tên hướng robot dọc đường đi).
+3. v(t), ω(t), ρ(t), e_θ(t) của S1 cho cả hai bộ.
+4. Quỹ đạo nhiều tư thế (≈20) mỗi bộ, hai panel cạnh nhau.
+5. Boxplot sai số vị trí, sai số hướng, thời gian theo kịch bản S2–S5.
+6. Cột tỷ lệ thành công theo kịch bản (kèm thanh sai số Wilson).
+7. Đường tỷ lệ thành công theo hệ số nhiễu (quét).
+8. Bản đồ vùng ổn định gain và phổ trị riêng (mục 5).
+9. Heatmap tỷ lệ thành công theo vị trí xuất phát (x0,y0) trung bình theo θ0 — cho thấy vùng "khó" của mỗi bộ.
+10. Ablation: bộ cực có/không có đóng băng gần dock, có/không hysteresis; PID có/không lọc D, có/không anti-windup.
+
+## 10. Cấu trúc dự án
+```
+docking/
+  README.md            # cách chạy, tái lập kết quả
+  requirements.txt
+  config.py            # dt, giới hạn, tiêu chí, dataclass Noise, seeds
+  robot.py             # step(), wrap(), bão hòa, hàng đợi trễ
+  controllers.py       # PolarController, DualPID (class có reset())
+  sim.py               # run_episode() trả về dict (ok, reason, t, e_pos, e_yaw, traj, v, w)
+  stability.py         # tuyến tính hóa, trị riêng, điều kiện, bản đồ vùng ổn định
+  tuning.py            # tinh chỉnh công bằng, lưu best_gains.json
+  experiments.py       # chạy S1–S5, quét, ablation; lưu results/*.csv
+  plots.py             # toàn bộ hình mục 9
+  stats.py             # Wilson CI, McNemar, Wilcoxon
+  tests/test_basic.py  # pytest
+  main.py              # python main.py --all | --stability | --tune | --scenarios | --plots
+  results/  figures/
+```
+
+## 11. Kiểm thử bắt buộc (pytest)
+- wrap() luôn trả về (-π,π].
+- Không nhiễu, tư thế (-2,0,0): cả hai bộ docking thành công.
+- Bão hòa luôn được tuân thủ: |v|≤V_MAX, |ω|≤W_MAX tại mọi bước.
+- Tái lập: cùng seed cho cùng kết quả từng bit.
+- Điều kiện ổn định trả về True với gain (0.5,1.5,-0.5) và False với kβ>0.
+- Tiêu chí thành công dùng trạng thái thật (kiểm bằng test đặt nhiễu đo rất lớn nhưng robot vẫn ở đúng vị trí).
+
+## 12. Yêu cầu đầu ra và cách làm việc
+- Chạy `python main.py --all` phải sinh toàn bộ results/*.csv, figures/*.png|pdf, và in bảng tóm tắt dạng Markdown ra console. Thời gian chạy toàn bộ < 15 phút (cho phép vector hóa hoặc multiprocessing).
+- Ngoài code, xuất file `results/summary.md` gồm: bảng gain trước/sau tinh chỉnh, bảng chỉ số mean±std theo kịch bản, kết quả kiểm định, và 5–8 nhận xét tự động mô tả bộ nào tốt hơn ở kịch bản nào dựa trên số liệu (không bịa; chỉ nêu những gì số liệu hỗ trợ).
+- Làm theo thứ tự: robot.py → controllers.py → sim.py → test → stability.py → tuning.py → experiments.py → plots.py. Sau mỗi module chạy test rồi mới sang module tiếp.
+- Nếu một bộ điều khiển thất bại nhiều ở vùng nào đó, KHÔNG tự chỉnh để "đẹp số liệu" mà báo cáo trung thực và đề xuất nguyên nhân.
+- Cuối cùng liệt kê: các giả thiết đã dùng, giới hạn của mô phỏng, và các tham số tôi nên thử thay đổi.

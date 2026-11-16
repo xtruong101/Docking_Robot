@@ -1,0 +1,14 @@
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+*.egg-info/
+.venv/
+venv/
+
+# AI Agent / Skill workflow files
+agent.md
+context.md
+issue.md
+open_question.md
+

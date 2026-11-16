@@ -1,0 +1,7 @@
+system,variant,success_rate,time_mean,overshoot_rate,e_pos_mean
+Polar,"Polar (Gốc đầy đủ: có Freeze, có Hysteresis)",1.0,9.4414,0.0,0.015708822346460732
+Polar,Polar (Không Freeze gần dock),1.0,9.5006,0.0,0.016341659706341508
+Polar,Polar (Không Hysteresis quay lưng),1.0,9.4372,0.0,0.01587426650939509
+DualPID,"PID (Gốc đầy đủ: có Lọc D, có Anti-windup)",0.94,9.946170212765958,0.06,0.023949085222429233
+DualPID,PID (Không Lọc D),0.94,9.809361702127658,0.06,0.023073523798468637
+DualPID,PID (Không Anti-windup),0.95,9.473894736842105,0.05,0.02321770430335876

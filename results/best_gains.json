@@ -1,0 +1,90 @@
+{
+  "polar": {
+    "controller": "PolarController",
+    "initial_gains": {
+      "k_rho": 0.5,
+      "k_alpha": 1.5,
+      "k_beta": -0.5
+    },
+    "initial_result": {
+      "gains": {
+        "k_rho": 0.5,
+        "k_alpha": 1.5,
+        "k_beta": -0.5
+      },
+      "cost": -0.873732,
+      "success_rate": 1.0,
+      "mean_time": 12.626799999999998,
+      "overshoot_rate": 0.0
+    },
+    "best_gains": {
+      "k_rho": 1.1851,
+      "k_alpha": 2.0196,
+      "k_beta": -0.5856
+    },
+    "best_result": {
+      "gains": {
+        "k_rho": 1.1851,
+        "k_alpha": 2.0196,
+        "k_beta": -0.5856
+      },
+      "cost": -0.910792,
+      "success_rate": 1.0,
+      "mean_time": 8.920799999999998,
+      "overshoot_rate": 0.0
+    },
+    "all_evaluations_count": 300
+  },
+  "pid": {
+    "controller": "DualPIDController",
+    "initial_gains": {
+      "kp_v": 1.0,
+      "ki_v": 0.0,
+      "kd_v": 0.1,
+      "kp_w": 3.0,
+      "ki_w": 0.0,
+      "kd_w": 0.2,
+      "k_y": 2.0
+    },
+    "initial_result": {
+      "gains": {
+        "kp_v": 1.0,
+        "ki_v": 0.0,
+        "kd_v": 0.1,
+        "kp_w": 3.0,
+        "ki_w": 0.0,
+        "kd_w": 0.2,
+        "k_y": 2.0
+      },
+      "cost": -0.01301000000000005,
+      "success_rate": 0.56,
+      "mean_time": 32.699,
+      "overshoot_rate": 0.44
+    },
+    "best_gains": {
+      "kp_v": 1.555,
+      "ki_v": 0.0045,
+      "kd_v": 0.112,
+      "kp_w": 2.5857,
+      "ki_w": 0.015,
+      "kd_w": 0.0885,
+      "k_y": 3.4972
+    },
+    "best_result": {
+      "gains": {
+        "kp_v": 1.555,
+        "ki_v": 0.0045,
+        "kd_v": 0.112,
+        "kp_w": 2.5857,
+        "ki_w": 0.015,
+        "kd_w": 0.0885,
+        "k_y": 3.4972
+      },
+      "cost": -0.622752,
+      "success_rate": 0.86,
+      "mean_time": 16.7248,
+      "overshoot_rate": 0.14
+    },
+    "all_evaluations_count": 300
+  }
+}
