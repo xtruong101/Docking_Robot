@@ -555,14 +555,14 @@ def main():
     # ==================== DANH MỤC HÌNH VẼ & BẢNG BIỂU ====================
     add_heading_styled(doc, "DANH MỤC HÌNH VẼ", level=1)
     figures_list = [
+        "Hình 1.1: Minh họa bài toán bám đường thẳng hướng vào trạm sạc (Driving Along a Line) và hạn chế không tự dừng tại Dock.",
         "Hình 2.1: Biểu diễn tư thế robot di động trong không gian 2D (Pose SE(2)).",
         "Hình 2.2: Mô hình động học robot di động vi sai và hệ trục tọa độ {W}, {B} [1].",
         "Hình 2.3: Bài toán điều khiển bám điểm (Driving to a Point) và hạn chế không kiểm soát góc hướng đích theta_G [1].",
         "Hình 2.4: Định nghĩa các biến trạng thái trong hệ tọa độ cực (rho, alpha, beta) cho bài toán điều khiển về tư thế đích [1].",
         "Hình 2.5: Sơ đồ khối cấu trúc điều khiển theo hệ tọa độ cực [1].",
         "Hình 2.6: Sơ đồ khối vòng điều khiển PID kinh điển.",
-        "Hình 2.7: Minh họa quỹ đạo hội tụ theo bài toán bám đường thẳng (Driving Along a Line) [1].",
-        "Hình 2.8: Sơ đồ khối cấu trúc bộ điều khiển PID Hai vòng (Dual-loop PID).",
+        "Hình 2.7: Sơ đồ khối cấu trúc bộ điều khiển PID Hai vòng (Dual-loop PID).",
         "Hình 3.1: Sơ đồ kiến trúc vòng lặp mô phỏng khép kín thuần Python.",
         "Hình 4.1: Phân tích vùng ổn định giải tích trên mặt phẳng tham số (k_alpha, k_beta) và cực trị riêng lớn nhất.",
         "Hình 4.2: Sơ đồ hệ tọa độ robot vi sai và các biến trạng thái cực cập trạm sạc thực tế.",
@@ -600,7 +600,10 @@ def main():
     add_body_p(doc, "Quá trình cập trạm sạc đòi hỏi robot di chuyển tiếp cận cổng kết nối sạc điện (thông qua tiếp điểm kim loại hoặc đế sạc không dây). Tại cự ly áp sát cuối cùng, bất kỳ sai lệch nhỏ nào về góc quay hoặc vị trí đều có thể dẫn tới việc gãy chốt sạc, hồ quang điện chập cháy hoặc tiếp xúc điện không đảm bảo. Do đó, bài toán docking đòi hỏi độ chính xác định vị ở cấp độ centimet và độ lệch góc chỉ trong vài độ, đặt ra thách thức lớn đối với hệ thống điều khiển tự động.")
 
     add_heading_styled(doc, "1.2. Phát biểu bài toán cập trạm sạc cho robot vi sai", level=2)
-    add_body_p(doc, r"Đối tượng nghiên cứu của đề tài là robot di động truyền động vi sai 2 bánh độc lập (Differential Drive Mobile Robot hay mô hình Unicycle). Robot chuyển động trong mặt phẳng 2 chiều không vật cản. Về mặt điều khiển học, robot vi sai là một hệ phi holonomic (non-holonomic system) tiêu biểu: robot chịu ràng buộc không trượt bên, do đó số bậc tự do điều khiển chỉ là 2 (vận tốc dài [[v]] và vận tốc góc [[\omega]]) trong khi không gian cấu hình trạng thái có 3 chiều (tọa độ [[x, y]] và góc hướng [[\theta]]). Việc đưa robot về đúng tọa độ mục tiêu đồng thời căn thẳng góc hướng đòi hỏi các bộ điều khiển phi tuyến chuyên biệt hoặc phân rã vòng điều khiển.")
+    add_body_p(doc, r"Đối tượng nghiên cứu của đề tài là robot di động truyền động vi sai 2 bánh độc lập (Differential Drive Mobile Robot hay mô hình Unicycle). Robot chuyển động trong mặt phẳng 2 chiều không vật cản. Về mặt điều khiển học, robot vi sai là một hệ phi holonomic (non-holonomic system) tiêu biểu: robot chịu ràng buộc không trượt bên, do đó số bậc tự do điều khiển chỉ là 2 (vận tốc dài [[v]] và vận tốc góc [[\omega]]) trong khi không gian cấu hình trạng thái có 3 chiều (tọa độ [[x, y]] và góc hướng [[\theta]]).")
+    add_body_p(doc, r"Trong bài toán cập trạm sạc tại gốc tọa độ [[O(0, 0)]] với hướng kết nối dọc theo chiều dương trục hoành ([[\theta_{\mathrm{dock}} = 0\text{ rad}]]), cách tiếp cận trực quan nhất là quy về bài toán bám đường thẳng (Driving Along a Line) [1]: đặt một đường thẳng dẫn hướng đi thẳng vào cổng trạm sạc theo trục [[y = 0]] (phương trình tổng quát [[ax + by + c = 0]] với [[a = 0, b = 1, c = 0]], khoảng cách pháp tuyến [[d = y]] và hướng đường thẳng [[\theta_{\mathrm{line}} = 0]]). Robot cần triệt tiêu sai lệch ngang [[y \to 0]] và căn thẳng góc hướng [[\theta \to 0]] để tiến vào dock.")
+    add_body_p(doc, r"Tuy nhiên, nhược điểm cốt lõi của chiến lược bám đường thẳng thuần túy [1] là robot di chuyển với vận tốc tiến không đổi ([[v = \text{const}]]) và chỉ điều khiển góc lái để giữ xe trên đường. Do đó, khi đến vị trí trạm sạc [[O(0, 0)]], xe không thể tự giảm tốc và dừng lại đúng điểm sạc mà sẽ tiếp tục chạy vượt quá trạm sạc (overshoot [[x > 0.05\text{ m}]], Hình 1.1). Hạn chế này đặt ra yêu cầu phải sử dụng các bộ điều khiển hoàn chỉnh ở Chương 2 — điều khiển đồng thời cả góc hướng lẫn vận tốc tiến theo khoảng cách tới dock (như giải thuật Tọa độ cực hoặc PID Hai vòng).")
+    add_figure_with_caption(doc, str(theory_fig_dir / "fig1_1_line_following_dock.png"), "Hình 1.1: Minh họa bài toán bám đường thẳng hướng vào trạm sạc (Driving Along a Line) và hạn chế không tự dừng tại Dock.", width_inch=5.6)
 
     add_heading_styled(doc, "1.3. Mục tiêu kỹ thuật và tiêu chí định lượng cần đạt", level=2)
     add_body_p(doc, r"Mục tiêu trọng tâm của đề tài là nghiên cứu, thiết kế, mô phỏng và so sánh định lượng hai chiến lược điều khiển phi tuyến cho quá trình Autonomous Docking. Trạm sạc được đặt tại gốc tọa độ [[O(0, 0)]] với hướng kết nối dọc theo chiều dương trục [[x]] ([[\theta_{\mathrm{dock}} = 0\text{ rad}]]). Để đảm bảo tính nghiêm ngặt và tương thích với ứng dụng thực tế, tiêu chí docking thành công được đánh giá dựa trên TRẠNG THÁI THẬT của robot và phải thỏa mãn đồng thời 4 điều kiện khắt khe:")
@@ -665,25 +668,27 @@ def main():
     add_body_p(doc, r"Để chống hiện tượng bật/tắt chế độ liên tục (chattering) khi [[\left|\alpha\right|]] dao động quanh ngưỡng [[\pi/2]] dưới tác động của nhiễu, dải trễ Hysteresis [[\Delta_h = 0.1\text{ rad}]] được áp dụng: chỉ kích hoạt quay tại chỗ khi [[\left|\alpha\right| > \pi/2 + \Delta_h]], và chỉ thoát về chế độ tiến bình thường (2.5) khi [[\left|\alpha\right| < \pi/2 - \Delta_h]].")
 
     add_heading_styled(doc, "2.4. Điều khiển PID kinh điển và cấu trúc PID Hai vòng (Dual-loop PID)", level=2)
+
     add_heading_styled(doc, "2.4.1. Lý thuyết điều khiển PID kinh điển", level=3)
-    add_body_p(doc, "Bộ điều khiển PID (Proportional–Integral–Derivative) là bộ điều khiển hồi tiếp vòng kín phổ biến nhất trong công nghiệp nhờ cấu trúc đơn giản và không đòi hỏi mô hình chính xác của đối tượng [6]. Từ sai số điều khiển [[e(t) = SP - MV]] giữa giá trị đặt (Setpoint) và giá trị đo (Measured Variable), tín hiệu điều khiển [[u(t)]] được tổng hợp từ ba thành phần (Hình 2.6):")
-    add_latex_equation(doc, r"$u(t) = K_p e(t) + K_i \int_0^t e(\tau)\,d\tau + K_d \frac{de(t)}{dt}$", "2.7")
-    add_bullet_p(doc, "Khâu Tỷ lệ (P):", "Phản ứng tức thời tỷ lệ với sai số hiện tại thông qua hệ số [[K_p]]; giá trị [[K_p]] lớn giúp đáp ứng nhanh nhưng dễ gây vọt lố và dao động.")
-    add_bullet_p(doc, "Khâu Tích phân (I):", r"Tích lũy sai số quá khứ qua hệ số [[K_i]] để triệt tiêu sai số xác lập; tuy nhiên có thể gây tích lũy quá mức (integrator windup) khi cơ cấu chấp hành bị bão hòa, cần kẹp giới hạn [[ [-I_{\max}, I_{\max}] ]] (Anti-windup) [6].")
-    add_bullet_p(doc, "Khâu Vi phân (D):", r"Dự đoán xu hướng biến thiên của sai số qua hệ số [[K_d]] giúp giảm vọt lố và tăng độ tắt dần; do nhạy với nhiễu đo tần số cao, thực tế cần ghép thêm bộ lọc thông thấp bậc 1 ([[\alpha_{\mathrm{filter}} = 0.8]]) [6].")
+    add_body_p(doc, r"Bộ điều khiển PID (Proportional–Integral–Derivative) tác động dựa trên sai số [[e(t) = SP - MV]] giữa giá trị đặt (Setpoint) và giá trị đo được (Measured Variable) [6]. Xuất phát từ bộ điều khiển tỷ lệ cơ bản nhất (chỉ xét sai số ở hiện tại — Present):")
+    add_latex_equation(doc, r"$u_P(t) = K_p e(t)$", "2.7")
+    add_body_p(doc, r"Dù trực quan và phản ứng tức thời theo độ lớn sai số thông qua hệ số [[K_p]], bộ điều khiển P đơn thuần gặp hai vấn đề lớn khi vận hành thực tế [6]:")
+    add_bullet_p(doc, "1. Sai số xác lập (Steady-state error):", r"Khi sai số tiến về không ([[e = 0]]), tín hiệu điều khiển [[u_P = K_p e]] cũng bằng không. Đối với các hệ thống cần duy trì một mức tín hiệu điều khiển khác không tại điểm đặt hoặc chịu tác động của tải, ma sát, nhiễu lệch, khâu P không thể đưa sai số xác lập về đúng không mà luôn tồn tại một độ lệch tĩnh.")
+    add_bullet_p(doc, "2. Dao động (Oscillations):", r"Khâu P chỉ phản ứng theo vị trí sai số hiện tại mà không có thành phần giảm chấn (damping) triệt tiêu quán tính biến thiên; khi tăng [[K_p]] để đáp ứng nhanh hơn, hệ thống dễ bị vọt lố và dao động kéo dài quanh điểm đặt.")
+    add_body_p(doc, r"Để khắc phục hai hạn chế trên của bộ điều khiển P, lần lượt các khâu Tích phân (I) và Vi phân (D) được bổ sung [6]:")
+    add_bullet_p(doc, "Khâu Tích phân (I — Past):", r"Cộng thêm thành phần tích lũy sai số quá khứ [[K_i \int_0^t e(\tau)\,d\tau]] (hoặc viết theo hằng số thời gian tích phân [[\frac{K_p}{T_i}\int_0^t e(\tau)\,d\tau]]) giúp tín hiệu điều khiển tiếp tục tăng chừng nào sai số vẫn còn tồn tại, từ đó triệt tiêu hoàn toàn sai số xác lập. Trong thực tế có bão hòa cơ cấu chấp hành, cần kẹp giới hạn thành phần tích phân trong [[ [-I_{\max}, I_{\max}] ]] (Anti-windup) để tránh tích lũy quá mức.")
+    add_bullet_p(doc, "Khâu Vi phân (D — Future):", r"Bổ sung thành phần dự đoán xu hướng biến thiên sai số [[K_d \frac{de(t)}{dt}]] (hay [[K_p T_d \frac{de(t)}{dt}]]) đóng vai trò như một bộ giảm chấn (damper) chống lại tốc độ thay đổi quá nhanh của sai số, giúp dập tắt dao động và giảm vọt lố. Do phép lấy đạo hàm khuếch đại mạnh nhiễu đo tần số cao trên tín hiệu [[MV]], khâu D thực tế được ghép thêm bộ lọc thông thấp bậc 1 ([[\alpha_{\mathrm{filter}} = 0.8]]) [6].")
+    add_body_p(doc, r"Tổng hợp cả ba thành phần tạo thành luật điều khiển PID đầy đủ (Hình 2.6):")
+    add_latex_equation(doc, r"$u(t) = K_p e(t) + K_i \int_0^t e(\tau)\,d\tau + K_d \frac{de(t)}{dt}$", "2.8")
     add_figure_with_caption(doc, str(theory_fig_dir / "fig2_6_pid_classic.png"), "Hình 2.6: Sơ đồ khối vòng điều khiển PID kinh điển.", width_inch=5.6)
 
-    add_heading_styled(doc, "2.4.2. Chuyển tiếp sang cấu trúc PID Hai vòng (Dual-loop PID)", level=3)
-    add_body_p(doc, r"Vì bộ PID đơn chỉ xử lý một đầu vào–một đầu ra (SISO) trong khi robot vi sai cần điều khiển đồng thời hai biến [[(v, \omega)]] cho ba trạng thái [[(x, y, \theta)]], báo cáo kết hợp chiến lược bám đường thẳng tham chiếu (Driving Along a Line, Hình 2.7) [1] với hai bộ PID độc lập tạo thành cấu trúc Dual-loop PID (Hình 2.8):")
-
-    # Chèn hình Driving Along a Line (ROBOT_FINAL.pdf trang 5)
-    fig_th_line = str(theory_fig_dir / "pdf_p5_driving_along_line.png")
-    add_figure_with_caption(doc, fig_th_line, "Hình 2.7: Minh họa quỹ đạo hội tụ theo bài toán bám đường thẳng (Driving Along a Line) [1].", width_inch=3.8)
-    add_body_p(doc, r"Cụ thể, góc lái tham chiếu [[\theta_{\mathrm{ref}}]] và sai số góc [[e_\theta]] được xác định theo trường vector hướng về tim đường [[y = 0]]:")
-    add_latex_equation(doc, r"$\theta_{\mathrm{ref}} = -\arctan(k_y y), \qquad e_\theta = \theta_{\mathrm{ref}} - \theta, \quad e_\theta \in (-\pi, \pi]$", "2.8")
-    add_body_p(doc, r"Hai vòng điều khiển PID hoạt động song song để sinh vận tốc góc [[\omega]] (vòng trong) và vận tốc dài [[v]] (vòng ngoài có hãm tốc theo sai số góc):")
-    add_latex_equation(doc, r"$\omega = \mathrm{PID}_\omega(e_\theta), \qquad v = \mathrm{PID}_v(\rho)\cdot \max\left(0,\, \cos(e_\theta)\right)$", "2.9")
-    add_figure_with_caption(doc, str(theory_fig_dir / "fig2_8_dual_pid.png"), "Hình 2.8: Sơ đồ khối cấu trúc bộ điều khiển PID Hai vòng (Dual-loop PID).", width_inch=5.8)
+    add_heading_styled(doc, "2.4.2. Cấu trúc điều khiển PID Hai vòng (Dual-loop PID)", level=3)
+    add_body_p(doc, r"Vì bộ PID kinh điển chỉ xử lý một đầu vào–một đầu ra (SISO) trong khi robot vi sai cần điều khiển đồng thời hai biến [[(v, \omega)]] để vừa bám đường dẫn hướng [[y = 0]] (Mục 1.2) vừa tự giảm tốc và dừng lại chính xác tại trạm sạc [[O(0, 0)]], báo cáo thiết kế cấu trúc PID Hai vòng (Dual-loop PID, Hình 2.7). Trước hết, góc hướng tham chiếu [[\theta_{\mathrm{ref}}]] và sai số góc [[e_\theta]] được xác định theo trường vector hội tụ về tim đường [[y = 0]]:")
+    add_latex_equation(doc, r"$\theta_{\mathrm{ref}} = -\arctan(k_y y), \qquad e_\theta = \theta_{\mathrm{ref}} - \theta, \quad e_\theta \in (-\pi, \pi]$", "2.9")
+    add_body_p(doc, r"Hai vòng điều khiển PID độc lập hoạt động song song để sinh vận tốc góc [[\omega]] và vận tốc dài [[v]]:")
+    add_latex_equation(doc, r"$\omega = \mathrm{PID}_\omega(e_\theta), \qquad v = \mathrm{PID}_v(\rho)\cdot \max\left(0,\, \cos(e_\theta)\right)$", "2.10")
+    add_body_p(doc, r"Trong đó vòng trong [[\mathrm{PID}_\omega(e_\theta)]] điều khiển tốc độ quay để giữ robot bám sát đường [[y = 0]] và hướng [[+x]], còn vòng ngoài [[\mathrm{PID}_v(\rho)]] điều khiển vận tốc dài theo cự ly [[\rho \to 0]] (kết hợp hệ số hãm tốc [[\max(0, \cos(e_\theta))]] khi góc lệch lớn), giúp khắc phục triệt để nhược điểm không tự dừng được của bài toán bám đường thẳng thuần túy.")
+    add_figure_with_caption(doc, str(theory_fig_dir / "fig2_8_dual_pid.png"), "Hình 2.7: Sơ đồ khối cấu trúc bộ điều khiển PID Hai vòng (Dual-loop PID).", width_inch=5.8)
 
     doc.add_page_break()
 
